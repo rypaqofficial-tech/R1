@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Any, Dict, Optional, List
@@ -10,6 +11,22 @@ from datetime import datetime
 load_dotenv()
 
 app = FastAPI(title="Rypaq R1 - Predictive AI Platform (Python)")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://your-domain.com"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.post("/api/invoke-llm")
+async def invoke_llm(params: LLMParams):
+    ...
 
 # ========================= ENV & DB =========================
 FORGE_API_KEY = os.getenv("FORGE_API_KEY")
@@ -204,3 +221,9 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 3000)), reload=True)
+
+from fastapi.staticfiles import StaticFiles
+import os
+
+# Serve the built React frontend
+app.mount("/", StaticFiles(directory="../client/dist", html=True), name="frontend")
