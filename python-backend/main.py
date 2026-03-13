@@ -51,7 +51,7 @@ class Prediction(SQLModel, table=True):
     confidence: float
     risk_label: str
     shap_values: str  # JSON string
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
 
 class Portfolio(SQLModel, table=True):
     id: int = Field(primary_key=True)
