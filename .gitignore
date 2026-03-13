@@ -30,3 +30,13 @@ temp/
 .DS_Store
 Thumbs.db
 *.db
+# Frontend
+client/node_modules/
+client/dist/
+client/.env
+client/.vite/
+
+# Python
+python-backend/__pycache__/
+python-backend/.venv/
+python-backend/venv/
