@@ -1,42 +1,35 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.pyc
+# --- GLOBAL IGNORES ---
+**/node_modules/
+**/.venv/
+**/venv/
+**/__pycache__/
+**/.env
+**/.env.*
+**/.vscode/
+**/.idea/
 
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
+# --- FRONTEND SPECIFIC (R1/client) ---
+client/dist/
+client/.vite/
+client/.next/
+client/.nuxt/
 
-# Environment secrets (protects python-backend/.env)
-.env
-.env.local
-.env.*.local
+# --- BACKEND SPECIFIC (R1/python-backend) ---
+python-backend/*.py[cod]
+python-backend/.python-version
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs and temp
-*.log
-logs/
-temp/
-
-# OS generated
+# --- SYSTEM & LOGS ---
+**/*.log
+**/*.db
+**/*.sqlite*
 .DS_Store
 Thumbs.db
-*.db
-# Frontend
-client/node_modules/
-client/dist/
-client/.env
-client/.vite/
+.manus-logs/
+screenshots/
 
-# Python
-python-backend/__pycache__/
-python-backend/.venv/
-python-backend/venv/
+# --- BUILD & CACHE ---
+dist/
+build/
+.cache/
+.eslintcache
+*.tsbuildinfo
