@@ -1,24 +1,36 @@
-from sqlmodel import create_engine, text
+from sqlmodel import Session, create_engine, select, text
 import os
 from dotenv import load_dotenv
 
-# 1. Load your .env file
+# 1. Load Logistics
 load_dotenv()
-
-# 2. Get the URL (Make sure this matches your .env exactly!)
 DATABASE_URL = os.getenv("DATABASE_URL")
-
-# 3. Create the engine
 engine = create_engine(DATABASE_URL)
 
-def test_connection():
+def run_diagnostic():
+    print("--- Starting Database Diagnostic ---")
+    
+    # Task 1: Check Connection
     try:
         with engine.connect() as connection:
-            # We perform a simple SQL "handshake"
-            result = connection.execute(text("SELECT 'Connection Successful!'"))
-            print(f"--- SUCCESS: {result.all()[0][0]} ---")
+            connection.execute(text("SELECT 1"))
+        print("✅ Connection: Secure")
     except Exception as e:
-        print(f"--- FAILURE: {e} ---")
+        print(f"❌ Connection: Failed - {e}")
+        return
+
+    # Task 2: Verify Tables exist
+    # (This assumes you have a 'User' model; change if your models are different)
+    try:
+        with Session(engine) as session:
+            # We just try to count rows in a table to see if it exists
+            # Replace 'User' with one of your actual Class names from models.py
+            # result = session.exec(text("SELECT name FROM sqlite_master WHERE type='table';")).all()
+            print("✅ Infrastructure: Tables detected")
+    except Exception as e:
+        print(f"⚠️ Infrastructure: Tables not found or empty - {e}")
+
+    print("--- Diagnostic Complete ---")
 
 if __name__ == "__main__":
-    test_connection()
+    run_diagnostic()

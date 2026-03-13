@@ -1,12 +1,22 @@
-from sqlmodel import SQLModel
-from database import engine  # This imports the engine we created earlier
-import models                # This imports all your new Python classes
+from sqlmodel import SQLModel, create_engine, text
+import os
+from dotenv import load_dotenv
+# IMPORTANT: Import your models so SQLModel knows what tables to create
+from .models import * load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
-def create_db_and_tables():
-    print("--- Connecting to MySQL and Building Infrastructure ---")
-    # This is the "Magic" command that creates the tables in MySQL
-    SQLModel.metadata.create_all(engine)
-    print("--- SUCCESS: All tables created in rypaq_db! ---")
+def initialize_database():
+    try:
+        # This is the "Builder" command - it creates the .db file and all tables
+        print("--- Building Infrastructure... ---")
+        SQLModel.metadata.create_all(engine)
+        
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT 'Architecture Verified!'"))
+            print(f"--- SUCCESS: {result.all()[0][0]} ---")
+    except Exception as e:
+        print(f"--- FAILURE: {e} ---")
 
 if __name__ == "__main__":
-    create_db_and_tables()
+    initialize_database()
