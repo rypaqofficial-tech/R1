@@ -121,19 +121,20 @@ async def trpc_handler(path: str, request: Request):
 
 # ========================= PesaRisk Net (unchanged) =========================
 def pesa_risk_inference(inputs: Dict) -> Dict:
-    # (your exact code - no changes)
     gdp = inputs.get("gdpGrowth", 0)
     inflation = inputs.get("inflation", 0)
     revenue = inputs.get("revenueGrowth", 0)
-    debt = inputs.get("debtRatio", 0)
-    vol = inputs.get("volatility", 0)
+    debt = inputs.get("debtRatio", 0)      # e.g. 35 for 35%
+    vol = inputs.get("volatility", 0)      # e.g. 18 for 18%
 
+    # === NEW BALANCED NORMALIZATION ===
     gdpN = gdp / 10
     infN = inflation / 15
     revN = (revenue + 50) / 100
-    debtN = debt / 2
-    volN = vol / 0.5
+    debtN = debt / 100          # ← changed from /2
+    volN = vol / 100            # ← changed from /0.5
 
+    # Hidden layers (your original weights kept)
     h1 = math.tanh(-0.4*gdpN + 0.5*infN - 0.3*revN + 0.6*debtN + 0.4*volN - 0.1)
     h2 = math.tanh(0.3*gdpN - 0.4*infN + 0.2*revN - 0.5*debtN - 0.6*volN + 0.2)
     h3 = math.tanh(-0.5*gdpN + 0.3*infN - 0.4*revN + 0.3*debtN + 0.5*volN - 0.15)
@@ -141,21 +142,24 @@ def pesa_risk_inference(inputs: Dict) -> Dict:
     h4 = math.tanh(0.6*h1 - 0.4*h2 + 0.3*h3)
     h5 = math.tanh(-0.3*h1 + 0.5*h2 - 0.6*h3)
 
-    riskRaw = 0.5*h4 - 0.4*h5 + 0.35*debtN + 0.3*volN - 0.25*gdpN + 0.2*infN - 0.15*revN
-    riskScore = max(0.01, min(0.99, 1 / (1 + math.exp(-riskRaw * 3))))
+    # Risk calculation (slightly softened)
+    riskRaw = 0.5*h4 - 0.4*h5 + 0.25*debtN + 0.20*volN - 0.25*gdpN + 0.15*infN - 0.20*revN
+    riskScore = max(0.01, min(0.99, 1 / (1 + math.exp(-riskRaw * 2.5))))  # softer sigmoid
 
+    # IRR (unchanged)
     irrRaw = 17.5 + 3.5*gdpN + 2.0*revN - 4.0*debtN - 3.0*volN - 1.5*infN
     predictedIrr = max(5, min(35, irrRaw + (random.random() - 0.5) * 1.5))
 
-    confidence = max(0.65, min(0.95, 0.85 - 0.1*volN + 0.05*gdpN))
+    confidence = max(0.65, min(0.95, 0.85 - 0.08*volN + 0.06*gdpN))
 
-    totalImpact = abs(-0.2*gdpN) + abs(0.15*infN) + abs(0.25*revN) + abs(0.3*debtN) + abs(0.25*volN)
+    # SHAP (updated for new scaling)
+    totalImpact = abs(-0.2*gdpN) + abs(0.15*infN) + abs(0.25*revN) + abs(0.25*debtN) + abs(0.20*volN)
     shap = {
         "gdpGrowth": round((-0.2 * gdpN) / totalImpact, 3),
         "inflation": round((0.15 * infN) / totalImpact, 3),
         "revenueGrowth": round((-0.25 * revN) / totalImpact, 3),
-        "debtRatio": round((0.3 * debtN) / totalImpact, 3),
-        "volatility": round((0.25 * volN) / totalImpact, 3),
+        "debtRatio": round((0.25 * debtN) / totalImpact, 3),
+        "volatility": round((0.20 * volN) / totalImpact, 3),
     }
 
     riskLabel = "Low Risk" if riskScore < 0.3 else "Moderate Risk" if riskScore < 0.55 else "High Risk" if riskScore < 0.75 else "Critical Risk"
