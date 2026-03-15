@@ -7,3 +7,6 @@ sqlmodel>=0.0.22
 pymysql>=1.1.1
 asyncmy>=0.2.11
 python-multipart>=0.0.12
+python-jose[cryptography]
+passlib[bcrypt]
+pydantic-settings
